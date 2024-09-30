@@ -512,6 +512,12 @@ class Tsubasa {
       if (response.status === 200) {
         const { tap_level, tap_level_up_cost, coins_per_tap, total_coins } =
           response.data.game_data.user;
+        if (total_coins < tap_level_up_cost) {
+        return {
+          success: false,
+          error: `Not enough coins to level up. Required: ${tap_level_up_cost}, Available: ${total_coins}`,
+        };
+      }
         return {
           success: true,
           tap_level,
