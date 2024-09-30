@@ -504,42 +504,53 @@ class Tsubasa {
   }
 
   async callTapLevelUpAPI(initData, axiosInstance) {
-    const tapLevelUpUrl = "https://app.ton.tsubasa-rivals.com/api/tap/levelup";
-    const payload = { initData: initData };
+  const tapLevelUpUrl = "https://app.ton.tsubasa-rivals.com/api/tap/levelup";
+  const payload = { initData: initData };
 
-    try {
-      const response = await axiosInstance.post(tapLevelUpUrl, payload);
-      if (response.status === 200) {
-        const { tap_level, tap_level_up_cost, coins_per_tap, total_coins } =
-          response.data.game_data.user;
-        if (total_coins < tap_level_up_cost) {
+  try {
+    const response = await axiosInstance.post(tapLevelUpUrl, payload);
+    if (response.status === 200) {
+      const { tap_level, tap_level_up_cost, total_coins } =
+        response.data.game_data.user;
+
+      // Stop upgrading if the tap level reaches 20
+      if (tap_level >= 20) {
+        return {
+          success: false,
+          message: `Tap level is ${tap_level}, upgrade stopped at level 20.`,
+        };
+      }
+
+      // Check if the user has enough coins to level up
+      if (total_coins >= tap_level_up_cost) {
+        // Proceed with the level-up
+        return {
+          success: true,
+          tap_level,
+          message: `Tap level upgraded to ${tap_level}. Coins left: ${total_coins}`,
+        };
+      } else {
         return {
           success: false,
           error: `Not enough coins to level up. Required: ${tap_level_up_cost}, Available: ${total_coins}`,
         };
       }
-        return {
-          success: true,
-          tap_level,
-          tap_level_up_cost,
-          coins_per_tap,
-          total_coins,
-        };
-      } else {
-        return {
-          success: false,
-          error: `Error upgrading tap | Status: ${response.status}`,
-        };
-      }
-    } catch (error) {
-      const errorResult = await this.handleApiError(error, "callTapLevelUpAPI");
+    } else {
       return {
         success: false,
-        error: errorResult.error,
-        message: errorResult.message,
+        error: `Error upgrading tap | Status: ${response.status}`,
       };
     }
+  } catch (error) {
+    const errorResult = await this.handleApiError(error, "callTapLevelUpAPI");
+    return {
+      success: false,
+      error: errorResult.error,
+      message: errorResult.message,
+    };
   }
+}
+
 
   async callEnergyLevelUpAPI(initData, axiosInstance) {
     const energyLevelUpUrl =
