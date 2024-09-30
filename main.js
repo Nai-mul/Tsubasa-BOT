@@ -509,9 +509,10 @@ class Tsubasa {
 
   try {
     const response = await axiosInstance.post(tapLevelUpUrl, payload);
+
+    // Check if the response status is OK
     if (response.status === 200) {
-      const { tap_level, tap_level_up_cost, total_coins } =
-        response.data.game_data.user;
+      const { tap_level, tap_level_up_cost, total_coins } = response.data.game_data.user;
 
       // Stop upgrading if the tap level reaches 20
       if (tap_level >= 20) {
@@ -527,31 +528,28 @@ class Tsubasa {
         return {
           success: true,
           tap_level,
-          message: `Tap level upgraded to ${tap_level}. Coins left: ${total_coins}`,
+          message: `Tap level upgraded to ${tap_level}. Coins left: ${total_coins}.`,
         };
       } else {
         return {
           success: false,
-          error: `Not enough coins to level up. Required: ${tap_level_up_cost}, Available: ${total_coins}`,
+          message: `Not enough coins to level up. Required: ${tap_level_up_cost}, Available: ${total_coins}.`,
         };
       }
     } else {
+      // Do not handle non-200 responses
       return {
         success: false,
-        error: `Error upgrading tap | Status: ${response.status}`,
       };
     }
   } catch (error) {
-    const errorResult = await this.handleApiError(error, "callTapLevelUpAPI");
+    // Handle errors silently or log them as needed, but don't expose them in the response
     return {
       success: false,
-      error: errorResult.error,
-      message: errorResult.message,
     };
   }
 }
-
-
+  
   async callEnergyLevelUpAPI(initData, axiosInstance) {
     const energyLevelUpUrl =
       "https://app.ton.tsubasa-rivals.com/api/energy/levelup";
